@@ -1,0 +1,60 @@
+import { Users, UserCircle } from "lucide-react";
+
+interface Contact {
+  id: string;
+  name: string;
+  lastMessage?: string;
+  unread?: boolean;
+}
+
+interface ContactListProps {
+  contacts: Contact[];
+  selectedId?: string;
+  onSelect: (contact: Contact) => void;
+}
+
+export function ContactList({
+  contacts,
+  selectedId,
+  onSelect,
+}: ContactListProps) {
+  return (
+    <div className="h-full flex flex-col border-r border-border">
+      <div className="p-4 border-b border-border">
+        <h3 className="font-semibold text-foreground">Contacts</h3>
+      </div>
+
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+        {contacts.map((contact) => (
+          <button
+            key={contact.id}
+            onClick={() => onSelect(contact)}
+            className={`
+              w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all
+              ${
+                selectedId === contact.id
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "hover:bg-muted text-foreground"
+              }
+            `}
+          >
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-medium">
+              {contact.name.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{contact.name}</p>
+              {contact.lastMessage && (
+                <p className="text-xs text-muted-foreground truncate">
+                  {contact.lastMessage}
+                </p>
+              )}
+            </div>
+            {contact.unread && (
+              <div className="h-2 w-2 rounded-full bg-primary" />
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
