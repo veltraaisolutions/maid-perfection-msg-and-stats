@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -17,7 +17,7 @@ interface Message {
 }
 
 interface Contact {
-  id: string; // we use phone as unique id
+  id: string;
   name: string;
   lastMessage?: string;
 }
@@ -25,20 +25,43 @@ interface Contact {
 export default function Messages() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-  // Fetch all messages
-  const { data: messages, isLoading } = useQuery({
+  const {
+    data: messages,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["message_logs"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from<Message>("maid_to_perfection_message_logs")
+        .from("maid_to_perfection_message_logs")
         .select("*")
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data ?? [];
+      return (data as Message[]) ?? [];
     },
   });
 
-  // Derive contacts from messages (unique by phone)
+  useEffect(() => {
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "maid_to_perfection_message_logs",
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
   const contacts: Contact[] = messages
     ? Array.from(
         new Map(
@@ -54,7 +77,6 @@ export default function Messages() {
       )
     : [];
 
-  // Filter messages for selected contact
   const filteredMessages = selectedContact
     ? messages?.filter((msg) => msg.phone === selectedContact.id)
     : [];
@@ -71,8 +93,7 @@ export default function Messages() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 h-full">
-        {/* Header */}
+      <div className="flex flex-col h-full space-y-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Message Logs</h1>
           <p className="text-muted-foreground">
@@ -80,11 +101,10 @@ export default function Messages() {
           </p>
         </div>
 
-        {/* Messages Interface */}
-        <div className="glass-card rounded-xl overflow-hidden h-[calc(100vh-220px)]">
-          <div className="grid grid-cols-1 md:grid-cols-3 h-full">
-            {/* Contact List */}
-            <div className="md:col-span-1 h-full overflow-hidden">
+        <div className="glass-card rounded-xl overflow-hidden h-[calc(100vh-220px)] flex flex-col">
+          <div className="grid grid-cols-1 md:grid-cols-3 h-full min-h-0">
+            {/* Contact List Column */}
+            <div className="md:col-span-1 h-full min-h-0 border-r border-border">
               <ContactList
                 contacts={contacts}
                 selectedId={selectedContact?.id}
@@ -92,19 +112,20 @@ export default function Messages() {
               />
             </div>
 
-            {/* Message Thread */}
-            <div className="md:col-span-2 h-full border-l border-border">
+            {/* Message Thread Column */}
+            <div className="md:col-span-2 h-full min-h-0 bg-background/20">
               {selectedContact ? (
                 <MessageThread
                   messages={filteredMessages || []}
                   contactName={selectedContact.name}
+                  contactPhone={selectedContact.id}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
                   <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                     <MessageSquare className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <h3 className="text-lg font-semibold mb-2">
                     Select a conversation
                   </h3>
                   <p className="text-muted-foreground text-sm max-w-xs">

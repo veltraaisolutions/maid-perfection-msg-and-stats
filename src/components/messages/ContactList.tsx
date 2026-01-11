@@ -1,5 +1,3 @@
-import { Users, UserCircle } from "lucide-react";
-
 interface Contact {
   id: string;
   name: string;
@@ -19,26 +17,23 @@ export function ContactList({
   onSelect,
 }: ContactListProps) {
   return (
-    <div className="h-full flex flex-col border-r border-border">
-      <div className="p-4 border-b border-border">
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
+      <div className="p-4 border-b border-border shrink-0">
         <h3 className="font-semibold text-foreground">Contacts</h3>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin">
         {contacts.map((contact) => (
           <button
             key={contact.id}
             onClick={() => onSelect(contact)}
-            className={`
-              w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all
-              ${
-                selectedId === contact.id
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "hover:bg-muted text-foreground"
-              }
-            `}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 transition-all ${
+              selectedId === contact.id
+                ? "bg-primary/10 text-primary border-l-4 border-primary"
+                : "hover:bg-muted text-foreground border-l-4 border-transparent"
+            }`}
           >
-            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-medium">
+            <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-medium">
               {contact.name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
@@ -49,9 +44,6 @@ export function ContactList({
                 </p>
               )}
             </div>
-            {contact.unread && (
-              <div className="h-2 w-2 rounded-full bg-primary" />
-            )}
           </button>
         ))}
       </div>

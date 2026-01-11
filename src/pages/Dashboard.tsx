@@ -11,6 +11,7 @@ interface Job {
   Booking_status: string | null;
   price?: number | null;
   // future fields will appear in console
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
