@@ -149,6 +149,7 @@ export default function Jobs() {
         <JobsTable
           jobs={filteredJobs}
           onCancelJob={handleCancelJob}
+          onRefresh={refetch} // This comes from your useQuery hook
         />
       </div>
     </DashboardLayout>

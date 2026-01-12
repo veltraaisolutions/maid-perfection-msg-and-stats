@@ -3,17 +3,25 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Job } from "@/pages/Jobs";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowUpDown,
-  Trash2,
-  User,
-  MapPin,
-  Phone,
-  Calendar,
-} from "lucide-react";
+import { Trash2, ArrowUpDown } from "lucide-react";
 import { formatDate } from "./JobsTable";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export const columns = (onCancelJob: (job: Job) => void): ColumnDef<Job>[] => [
+// List of your cleaners
+const CLEANERS = ["bob doe", "Jane Smith", "John Wilson", "Alice May"];
+
+export const columns = (
+  onCancelJob: (job: Job) => void,
+  onUpdateSuccess: () => void
+): ColumnDef<Job>[] => [
   {
     accessorKey: "fullName",
     header: ({ column }) => (
@@ -27,10 +35,10 @@ export const columns = (onCancelJob: (job: Job) => void): ColumnDef<Job>[] => [
       </Button>
     ),
   },
-  {
-    accessorKey: "email",
-    header: "Email",
-  },
+  // {
+  //   accessorKey: "email",
+  //   header: "Email",
+  // },
   {
     accessorKey: "phone",
     header: "Phone",
@@ -38,14 +46,6 @@ export const columns = (onCancelJob: (job: Job) => void): ColumnDef<Job>[] => [
   {
     accessorKey: "fullAddress",
     header: "Address",
-    cell: ({ row }) => (
-      <div
-        className="max-w-[200px] truncate"
-        title={row.getValue("fullAddress")}
-      >
-        {row.getValue("fullAddress")}
-      </div>
-    ),
   },
   {
     accessorKey: "postcode",
@@ -55,61 +55,82 @@ export const columns = (onCancelJob: (job: Job) => void): ColumnDef<Job>[] => [
     accessorKey: "serviceType",
     header: "Service",
   },
-  {
-    accessorKey: "frequency",
-    header: "Frequency",
-  },
-  {
-    accessorKey: "bedrooms",
-    header: () => <div className="text-center">Beds</div>,
-    cell: ({ row }) => (
-      <div className="text-center font-medium">{row.getValue("bedrooms")}</div>
-    ),
-  },
-  {
-    accessorKey: "bathrooms",
-    header: () => <div className="text-center">Baths</div>,
-    cell: ({ row }) => (
-      <div className="text-center font-medium">{row.getValue("bathrooms")}</div>
-    ),
-  },
+  // {
+  //   accessorKey: "frequency",
+  //   header: "Frequency",
+  // },
+  // {
+  //   accessorKey: "bedrooms",
+  //   header: "Beds",
+  // },
+  // {
+  //   accessorKey: "bathrooms",
+  //   header: "Baths",
+  // },
   {
     accessorKey: "bookingDateTime",
     header: "Booking Date/Time",
-    cell: ({ row }) => (
-      <div className="whitespace-nowrap font-medium text-blue-600">
-        {formatDate(row.getValue("bookingDateTime"))}
-      </div>
-    ),
+    cell: ({ row }) => formatDate(row.getValue("bookingDateTime")),
   },
-  {
-    accessorKey: "timeline",
-    header: "Timeline",
-  },
-  {
-    accessorKey: "requirements",
-    header: "Special Requirements",
-    cell: ({ row }) => (
-      <div
-        className="max-w-[200px] italic text-muted-foreground truncate"
-        title={row.getValue("requirements")}
-      >
-        {row.getValue("requirements") || "None"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "lastCleanDate",
-    header: "Last Clean",
-  },
+  // {
+  //   accessorKey: "timeline",
+  //   header: "Timeline",
+  // },
+  // {
+  //   accessorKey: "requirements",
+  //   header: "Requirements",
+  // },
+  // {
+  //   accessorKey: "lastCleanDate",
+  //   header: "Last Clean",
+  // },
   {
     accessorKey: "cleanerName",
-    header: "Assigned Cleaner",
-    cell: ({ row }) => (
-      <div className="font-bold text-[#f6ca15]">
-        {row.getValue("cleanerName") || "UNASSIGNED"}
-      </div>
-    ),
+    header: "Cleaner Name",
+    cell: ({ row }) => {
+      const job = row.original;
+
+      const handleAssign = async (newName: string) => {
+        const { error } = await supabase
+          .from("maid_to_perfection_leads")
+          .update({ cleaner_name: newName })
+          .eq("id", job.id);
+
+        if (error) {
+          toast.error("Failed to assign cleaner");
+        } else {
+          toast.success(`Assigned ${newName} successfully!`);
+          onUpdateSuccess();
+        }
+      };
+
+      return (
+        <Select
+          defaultValue={job.cleanerName || ""}
+          onValueChange={handleAssign}
+        >
+          <SelectTrigger className="w-[180px] h-8 border-[#f6ca15]/50 focus:ring-[#f6ca15] bg-background">
+            <SelectValue placeholder="Select Cleaner" />
+          </SelectTrigger>
+          <SelectContent>
+            {CLEANERS.map((name) => (
+              <SelectItem
+                key={name}
+                value={name}
+              >
+                {name}
+              </SelectItem>
+            ))}
+            <SelectItem
+              value="Unassigned"
+              className="text-muted-foreground"
+            >
+              None
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      );
+    },
   },
   {
     accessorKey: "cleanerPhone",
@@ -118,29 +139,21 @@ export const columns = (onCancelJob: (job: Job) => void): ColumnDef<Job>[] => [
   {
     accessorKey: "bookingStatus",
     header: "Status",
-    cell: ({ row }) => (
-      <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-green-500/10 text-green-500 uppercase">
-        {row.getValue("bookingStatus")}
-      </span>
-    ),
   },
   {
     id: "actions",
     header: () => <div className="text-center">Cancel</div>,
-    cell: ({ row }) => {
-      const job = row.original;
-      return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-red-500 hover:text-red-700 hover:bg-red-50"
-            onClick={() => onCancelJob(job)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="text-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          onClick={() => onCancelJob(row.original)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    ),
   },
 ];
