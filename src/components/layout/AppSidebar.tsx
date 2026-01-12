@@ -24,7 +24,7 @@ const menuItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Booked Jobs", url: "/jobs", icon: ClipboardList },
   // { title: "Enquiries", url: "/enquiries", icon: Users },
-  // { title: "Message Logs", url: "/messages", icon: MessageSquare },
+  { title: "Message Logs", url: "/messages", icon: MessageSquare },
   // { title: "Schedule", url: "/schedule", icon: CalendarDays },
 ];
 

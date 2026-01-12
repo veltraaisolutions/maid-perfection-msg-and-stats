@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Job } from "@/pages/Jobs";
 import { Button } from "@/components/ui/button";
-import { Trash2, ArrowUpDown } from "lucide-react";
+import { Trash2, ArrowUpDown, MessageSquareShare } from "lucide-react";
 import { formatDate } from "./JobsTable";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// 1. Define the cleaners and their specific numbers here
 const CLEANER_PHONES: Record<string, string> = {
   "bob doe": "+923398787878",
   "Jane Smith": "+923398787878",
@@ -23,7 +22,6 @@ const CLEANER_PHONES: Record<string, string> = {
   "Alice May": "+923398787878",
 };
 
-// Get the list of names for the dropdown
 const CLEANER_NAMES = Object.keys(CLEANER_PHONES);
 
 export const columns = (
@@ -157,18 +155,67 @@ export const columns = (
   },
   {
     id: "actions",
-    header: () => <div className="text-center">Cancel</div>,
-    cell: ({ row }) => (
-      <div className="text-center">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-          onClick={() => onCancelJob(row.original)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    header: () => <div className="text-center">Actions</div>,
+    cell: ({ row }) => {
+      const job = row.original;
+
+      const handleRequestReview = async () => {
+        try {
+          const response = await fetch(
+            "https://n8n.veltraai.net/webhook/send-google-review-request-maid-to-perfection",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: job.fullName,
+                phone: job.phone,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            toast.success("Review request sent!");
+          } else {
+            toast.error("Failed to send request");
+          }
+        } catch (error) {
+          toast.error("Network error sending request");
+        }
+      };
+
+      const handleConfirmDelete = () => {
+        const confirmed = window.confirm(
+          `Are you sure you want to delete the job for ${job.fullName}?`
+        );
+        if (confirmed) {
+          onCancelJob(job);
+        }
+      };
+
+      return (
+        <div className="flex items-center justify-center gap-2">
+          {/* Request Google Review Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 gap-1"
+            onClick={handleRequestReview}
+          >
+            <MessageSquareShare className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase">Review</span>
+          </Button>
+
+          {/* Delete Button with Alert */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            onClick={handleConfirmDelete}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
   },
 ];
