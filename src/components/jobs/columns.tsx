@@ -15,8 +15,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// List of your cleaners
-const CLEANERS = ["bob doe", "Jane Smith", "John Wilson", "Alice May"];
+// 1. Define the cleaners and their specific numbers here
+const CLEANER_PHONES: Record<string, string> = {
+  "bob doe": "+923398787878",
+  "Jane Smith": "+923398787878",
+  "John Wilson": "+923398787878",
+  "Alice May": "+923398787878",
+};
+
+// Get the list of names for the dropdown
+const CLEANER_NAMES = Object.keys(CLEANER_PHONES);
 
 export const columns = (
   onCancelJob: (job: Job) => void,
@@ -91,9 +99,16 @@ export const columns = (
       const job = row.original;
 
       const handleAssign = async (newName: string) => {
+        // 2. Automatically get the specific number for this specific cleaner
+        const newPhone =
+          newName === "Unassigned" ? null : CLEANER_PHONES[newName];
+
         const { error } = await supabase
           .from("maid_to_perfection_leads")
-          .update({ cleaner_name: newName })
+          .update({
+            cleaner_name: newName === "Unassigned" ? null : newName,
+            cleaner_phone: newPhone,
+          })
           .eq("id", job.id);
 
         if (error) {
@@ -109,11 +124,11 @@ export const columns = (
           defaultValue={job.cleanerName || ""}
           onValueChange={handleAssign}
         >
-          <SelectTrigger className="w-[180px] h-8 border-[#f6ca15]/50 focus:ring-[#f6ca15] bg-background">
+          <SelectTrigger className="w-[180px] h-8 border-[#f6ca15]/50 focus:ring-[#f6ca15] bg-background text-white">
             <SelectValue placeholder="Select Cleaner" />
           </SelectTrigger>
           <SelectContent>
-            {CLEANERS.map((name) => (
+            {CLEANER_NAMES.map((name) => (
               <SelectItem
                 key={name}
                 value={name}
