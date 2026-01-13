@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { JobsTable } from "@/components/jobs/JobsTable";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { AddJobDialog } from "@/components/jobs/AddJobDialog";
 
 export interface Job {
   id: string;
@@ -28,6 +28,7 @@ export interface Job {
   cleanerName: string | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeJobKeys(rawJob: any): Job {
   return {
     id: rawJob.id,
@@ -128,10 +129,7 @@ export default function Jobs() {
               Manage all confirmed bookings
             </p>
           </div>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Job
-          </Button>
+          <AddJobDialog onRefresh={refetch} />
         </div>
 
         {/* Search */}
