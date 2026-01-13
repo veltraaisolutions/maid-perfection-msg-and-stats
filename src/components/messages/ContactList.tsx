@@ -27,19 +27,29 @@ export function ContactList({
           <button
             key={contact.id}
             onClick={() => onSelect(contact)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 transition-all ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 transition-all text-left ${
               selectedId === contact.id
                 ? "bg-primary/10 text-primary border-l-4 border-primary"
                 : "hover:bg-muted text-foreground border-l-4 border-transparent"
             }`}
           >
-            <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-medium">
-              {contact.name.charAt(0)}
+            <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-medium">
+              {contact.name.charAt(0).toLowerCase()}
             </div>
+
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{contact.name}</p>
+              <p
+                className={`font-bold text-sm truncate text-left ${
+                  selectedId === contact.id
+                    ? "text-[#f6ca15]"
+                    : "text-foreground"
+                }`}
+              >
+                {contact.name.toLowerCase()}
+              </p>
+
               {contact.lastMessage && (
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground truncate text-left">
                   {contact.lastMessage}
                 </p>
               )}
