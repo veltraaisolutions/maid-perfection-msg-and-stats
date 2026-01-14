@@ -1,27 +1,15 @@
+"use client";
+
 import { useState } from "react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, CheckCircle, MapPin, Key } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-interface Job {
-  id: string;
-  client_name: string;
-  address: string;
-  access_code?: string;
-  start_time: string;
-  end_time?: string;
-  status: string;
-  cleaner_confirmed: boolean;
-  cleaners?: {
-    name: string;
-    color_code: string;
-  };
-}
+import { Job } from "@/pages/Schedule";
 
 interface WeeklyCalendarProps {
   jobs: Job[];
@@ -49,52 +37,52 @@ export function WeeklyCalendar({ jobs }: WeeklyCalendarProps) {
     const startTime = new Date(job.start_time);
     const hour = startTime.getHours();
     const minutes = startTime.getMinutes();
-    const top = ((hour - 7) * 60 + minutes) * (60 / 60); // pixels per hour
+    const top = (hour - 7) * 60 + minutes;
     return { top: `${top}px` };
   };
 
   return (
-    <div className="glass-card rounded-xl overflow-hidden">
+    <div className="glass-card rounded-xl overflow-hidden bg-transparent">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigateWeek(-1)}
-          className="text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
-        <h3 className="font-semibold text-foreground">
-          {format(weekStart, "MMM d")} - {format(addDays(weekStart, 6), "MMM d, yyyy")}
+        <h3 className="font-semibold text-white italic uppercase tracking-widest">
+          {format(weekStart, "MMM d")} -{" "}
+          {format(addDays(weekStart, 6), "MMM d, yyyy")}
         </h3>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigateWeek(1)}
-          className="text-muted-foreground hover:text-foreground"
         >
           <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
 
-      {/* Calendar Grid */}
       <div className="overflow-x-auto">
         <div className="min-w-[800px]">
           {/* Day Headers */}
-          <div className="grid grid-cols-8 border-b border-border">
-            <div className="p-3 text-center text-xs text-muted-foreground"></div>
+          <div className="grid grid-cols-8 border-b border-white/10">
+            <div className="p-3"></div>
             {weekDays.map((day) => (
               <div
                 key={day.toISOString()}
-                className={`p-3 text-center border-l border-border ${
-                  isSameDay(day, new Date()) ? "bg-primary/5" : ""
-                }`}
+                className="p-3 text-center border-l border-white/10"
               >
-                <p className="text-xs text-muted-foreground">{format(day, "EEE")}</p>
-                <p className={`text-lg font-semibold ${
-                  isSameDay(day, new Date()) ? "text-primary" : "text-foreground"
-                }`}>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">
+                  {format(day, "EEE")}
+                </p>
+                <p
+                  className={`text-lg font-black ${
+                    isSameDay(day, new Date()) ? "text-[#f6ca15]" : "text-white"
+                  }`}
+                >
                   {format(day, "d")}
                 </p>
               </div>
@@ -104,14 +92,17 @@ export function WeeklyCalendar({ jobs }: WeeklyCalendarProps) {
           {/* Time Grid */}
           <div className="relative">
             {hours.map((hour) => (
-              <div key={hour} className="grid grid-cols-8 h-[60px] border-b border-border/50">
-                <div className="p-2 text-xs text-muted-foreground text-right pr-4 pt-0">
+              <div
+                key={hour}
+                className="grid grid-cols-8 h-[60px] border-b border-white/5"
+              >
+                <div className="p-2 text-[10px] font-bold text-muted-foreground text-right pr-4 pt-1 uppercase">
                   {format(new Date().setHours(hour, 0), "h a")}
                 </div>
                 {weekDays.map((day) => (
                   <div
                     key={`${day.toISOString()}-${hour}`}
-                    className="relative border-l border-border/30"
+                    className="relative border-l border-white/5"
                   />
                 ))}
               </div>
@@ -126,59 +117,74 @@ export function WeeklyCalendar({ jobs }: WeeklyCalendarProps) {
                   <Tooltip key={job.id}>
                     <TooltipTrigger asChild>
                       <div
-                        className={`
-                          absolute left-0 right-0 mx-1 p-2 rounded-lg cursor-pointer
-                          transition-all duration-200 hover:scale-[1.02] hover:z-10
-                        `}
+                        className={`absolute left-0 right-0 mx-1 p-2 rounded-xl cursor-pointer transition-all border shadow-xl backdrop-blur-md ${
+                          job.isGroup
+                            ? "ring-2 ring-[#f6ca15]"
+                            : "border-white/10"
+                        }`}
                         style={{
                           top: position.top,
                           left: `calc(${12.5 * (dayIndex + 1)}% + 4px)`,
                           width: "calc(12.5% - 8px)",
-                          height: "50px",
-                          backgroundColor: job.cleaners?.color_code 
-                            ? `${job.cleaners.color_code}30`
-                            : "hsl(var(--muted))",
-                          borderLeft: `3px solid ${job.cleaners?.color_code || "hsl(var(--muted-foreground))"}`,
+                          minHeight: job.isGroup ? "70px" : "50px",
+                          height: "auto",
+                          backgroundColor: "rgba(246, 202, 21, 0.1)",
+                          borderLeft: "4px solid #f6ca15",
                         }}
                       >
-                        <p className="text-xs font-medium text-foreground truncate">
-                          {job.client_name}
-                        </p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <p className="text-xs text-muted-foreground truncate flex-1">
-                            {job.cleaners?.name || "Unassigned"}
+                        <div className="flex flex-col h-full">
+                          <div className="flex items-start justify-between">
+                            <p className="text-[10px] font-black text-white uppercase truncate">
+                              {job.client_name}
+                            </p>
+                            {job.isGroup && (
+                              <Users
+                                size={12}
+                                className="text-[#f6ca15]"
+                              />
+                            )}
+                          </div>
+                          <p className="text-[9px] font-bold text-[#f6ca15]/80 uppercase mt-1">
+                            {job.cleaner_name}
                           </p>
-                          {job.cleaner_confirmed && (
-                            <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
+
+                          {job.isGroup && (
+                            <div className="mt-2 pt-1 border-t border-white/10">
+                              {job.allJobs.slice(1, 3).map((subJob) => (
+                                <p
+                                  key={subJob.id}
+                                  className="text-[8px] text-white/50 truncate tracking-tight"
+                                >
+                                  + {subJob.client_name}
+                                </p>
+                              ))}
+                            </div>
                           )}
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent 
-                      side="right" 
-                      className="max-w-[250px] p-3 bg-popover border-border"
+                    <TooltipContent
+                      side="right"
+                      className="w-64 p-4 bg-black/90 border border-[#f6ca15]/20 shadow-2xl rounded-2xl"
                     >
-                      <div className="space-y-2">
-                        <p className="font-semibold text-foreground">{job.client_name}</p>
-                        <div className="flex items-start gap-2 text-sm">
-                          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                          <span className="text-muted-foreground">{job.address}</span>
-                        </div>
-                        {job.access_code && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Key className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-foreground font-mono">{job.access_code}</span>
+                      <div className="space-y-3">
+                        {job.allJobs.map((item) => (
+                          <div
+                            key={item.id}
+                            className="p-2 bg-white/5 rounded-lg border border-white/5"
+                          >
+                            <p className="font-bold text-white text-sm">
+                              {item.client_name}
+                            </p>
+                            <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-1">
+                              <MapPin size={10} />
+                              <span className="truncate">{item.address}</span>
+                            </div>
+                            <p className="text-[10px] text-[#f6ca15] font-bold mt-1 uppercase">
+                              Cleaner: {item.cleaner_name}
+                            </p>
                           </div>
-                        )}
-                        <div className="flex items-center gap-2 mt-2">
-                          {job.cleaner_confirmed ? (
-                            <span className="text-xs text-green-400 flex items-center gap-1">
-                              <CheckCircle className="h-3 w-3" /> Confirmed
-                            </span>
-                          ) : (
-                            <span className="text-xs text-yellow-400">Awaiting Confirmation</span>
-                          )}
-                        </div>
+                        ))}
                       </div>
                     </TooltipContent>
                   </Tooltip>
