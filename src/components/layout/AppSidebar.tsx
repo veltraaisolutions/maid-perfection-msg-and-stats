@@ -25,7 +25,7 @@ const menuItems = [
   { title: "Booked Jobs", url: "/jobs", icon: ClipboardList },
   // { title: "Enquiries", url: "/enquiries", icon: Users },
   { title: "Message Logs", url: "/messages", icon: MessageSquare },
-  // { title: "Schedule", url: "/schedule", icon: CalendarDays },
+  { title: "Schedule", url: "/schedule", icon: CalendarDays },
 ];
 
 export function AppSidebar() {
