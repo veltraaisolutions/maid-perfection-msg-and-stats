@@ -20,6 +20,7 @@ const CLEANER_PHONES: Record<string, string> = {
   "Jane Smith": "+923398787878",
   "John Wilson": "+923398787878",
   "Alice May": "+923398787878",
+  "Kayleigh-Anne": "+447393582113",
 };
 
 const CLEANER_NAMES = Object.keys(CLEANER_PHONES);
