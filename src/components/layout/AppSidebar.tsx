@@ -5,7 +5,6 @@ import {
   ClipboardList,
   Users,
   MessageSquare,
-  Sparkles,
   Crown,
 } from "lucide-react";
 import {
@@ -34,18 +33,24 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r border-sidebar-border bg-sidebar">
       <SidebarHeader className="p-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center glow-gold-sm">
-            <Sparkles className="h-5 w-5 text-primary" />
+        <div className="flex items-center gap-3 group">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[#D4AF37]/30 group-hover:border-[#D4AF37] transition-colors flex-shrink-0">
+            <img
+              src="/img/logo.svg"
+              alt="Maid To Perfection Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <div>
-            <h1 className="font-bold text-lg text-foreground tracking-tight">
-              Maid To Perfection
-            </h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Crown className="h-3 w-3 text-primary" />
+
+          {/* Text Styling */}
+          <div className="flex flex-col">
+            <span className="text-[14px] font-black italic uppercase tracking-tighter leading-none text-foreground">
+              Maid <span className="text-[#D4AF37]">To Perfection</span>
+            </span>
+            <span className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground mt-1 flex items-center gap-1">
+              <Crown className="h-2 w-2 text-[#D4AF37]" />
               Admin Dashboard
-            </p>
+            </span>
           </div>
         </div>
       </SidebarHeader>
