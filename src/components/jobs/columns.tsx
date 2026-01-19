@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 
 const CLEANER_PHONES: Record<string, string> = {
-  "bob doe": "+923398787878",
+  "Eamon": "+447738355687",
   "Jane Smith": "+923398787878",
   "John Wilson": "+923398787878",
   "Alice May": "+923398787878",
@@ -27,7 +27,7 @@ const CLEANER_NAMES = Object.keys(CLEANER_PHONES);
 
 export const columns = (
   onCancelJob: (job: Job) => void,
-  onUpdateSuccess: () => void
+  onUpdateSuccess: () => void,
 ): ColumnDef<Job>[] => [
   {
     accessorKey: "fullName",
@@ -171,7 +171,7 @@ export const columns = (
                 name: job.fullName,
                 phone: job.phone,
               }),
-            }
+            },
           );
 
           if (response.ok) {
@@ -186,7 +186,7 @@ export const columns = (
 
       const handleConfirmDelete = () => {
         const confirmed = window.confirm(
-          `Are you sure you want to delete the job for ${job.fullName}?`
+          `Are you sure you want to delete the job for ${job.fullName}?`,
         );
         if (confirmed) {
           onCancelJob(job);
